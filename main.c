@@ -129,8 +129,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  int i = 0;
-  while (i < 10) {
+  while (1) {
 
     struct pcap_pkthdr* header;
     const u_char* packet;
@@ -141,8 +140,6 @@ int main(int argc, char* argv[]) {
     mac(packet);
     ip(packet);
     tcp(packet);
-
-    ++i;
   }
 
   pcap_close(handle);
