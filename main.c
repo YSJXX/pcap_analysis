@@ -6,56 +6,60 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 
+void ip(const u_char* packets);
+void tcp(const u_char* packets);
 
 void usage() {
   printf("syntax: pcap_test <interface>\n");
   printf("sample: pcap_test wlan0\n");
 }
+void ds(uint8_t a[],int x)
+{
+        if(x==1)
+            printf("dmac:");
+        if(x==2)
+            printf("smac:");
 
+    for(int i = 0; i<=5 ;i++)
+    {
+        printf("%02x", a[i]);
+        if(i<=4)
+            printf(":");
+        if(i>=5)
+            printf("\n");
+     }
+}
 void mac(const u_char* packets)
 {
     struct ether_header *eh;
     //unsigned short ether_type;
     eh = (struct ether_header *) packets;
-    printf("-----------------------------\n");
-    printf("dmac:");
-    for(int i = 0; i<=5 ;i++){
-        printf("%02x", eh->ether_dhost[i]);
-        if(i<=4)
-            printf(":");
-        if(i>=5)
-            printf("\n");
-        }
-
-    printf("smac:");
-    for(int i = 0; i<=5 ;i++){
-        printf("%02x", eh->ether_shost[i]);
-        if(i<=4)
-            printf(":");
-        if(i>=5)
-            printf("\n");
-        }
+    printf("****************************\n");
+    ds(eh->ether_dhost,1);
+    ds(eh->ether_shost,2);
 
     switch(ntohs(eh->ether_type))
     {
         case ETHERTYPE_IP:
-            printf("Next protocol : IP\n");
+            printf("Next protocol : IP\n\n");
+            ip(packets);
             break;
 
         case ETHERTYPE_ARP:
-            printf("Next protocol : ARP\n");
+            printf("Next protocol : ARP\n\n");
+            ip(packets);
             break;
 
         case ETHERTYPE_REVARP:
-            printf("Next protocol : REVARP\n");
+            printf("Next protocol : REVARP\n\n");
+            ip(packets);
             break;
 
         default:
-            printf("Not Support Protocol\n");
+            printf("Not Support Protocol\n\n");
             break;
     }
 
-    printf("-----------------------------\n");
 
 }
 
@@ -71,28 +75,34 @@ void ip(const u_char* packets)
     switch((unsigned int)iph->protocol)
     {
         case 0:
-            printf("Next protocol : Reserved\n");
+            printf("Next protocol : Reserved\n\n");
+            tcp(packets);
             break;
         case 1:
-            printf("Next protocol : ICMP\n");
+            printf("Next protocol : ICMP\n\n");
+            tcp(packets);
             break;
         case 2:
-            printf("Next protocol : IGMP\n");
+            printf("Next protocol : IGMP\n\n");
+            tcp(packets);
             break;
         case 3:
-            printf("Next protocol : GGP\n");
+            printf("Next protocol : GGP\n\n");
+            tcp(packets);
             break;
         case 6:
-            printf("Next protocol : TCP\n");
+            printf("Next protocol : TCP\n\n");
+            tcp(packets);
             break;
         case 17:
-            printf("Next protocol : UDP\n");
+            printf("Next protocol : UDP\n\n");
+            tcp(packets);
             break;
         default:
-            printf("Not Support Protocol\n");
+            printf("Not Support Protocol\n\n");
             break;
     }
-    printf("-----------------------------\n");
+    printf("\n");
 }
 
 void tcp(const u_char* packets)
@@ -112,7 +122,7 @@ void tcp(const u_char* packets)
     if(ntohs(tcph->th_dport) == 80 || ntohs(tcph->th_sport) == 80)
         printf("http data: %.*s\n",16, http);
 
-    printf("-----------------------------\n");
+    printf("****************************\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -129,6 +139,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
+
   while (1) {
 
     struct pcap_pkthdr* header;
@@ -138,8 +149,9 @@ int main(int argc, char* argv[]) {
     if (res == -1 || res == -2) break;
 
     mac(packet);
-    ip(packet);
-    tcp(packet);
+    // ip(packet);
+    //tcp(packet);
+
   }
 
   pcap_close(handle);
